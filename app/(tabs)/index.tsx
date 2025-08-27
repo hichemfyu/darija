@@ -51,10 +51,10 @@ export default function HomeScreen() {
       if (destination) {
         router.push(destination.route as any);
       } else {
-        router.push('/lessons');
+        router.push('/lesson');
       }
     } catch (error) {
-      router.push('/lessons');
+      router.push('/lesson');
     }
   };
 
