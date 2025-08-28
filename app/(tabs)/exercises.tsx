@@ -33,7 +33,7 @@ export default function ExercisesScreen() {
       setCategories(data || []);
     } catch (error) {
       console.error('Error fetching exercise categories:', error);
-      // Fallback vers des catégories par défaut
+      // ✅ CORRECTION 1: Fallback vers des catégories par défaut
       setCategories([
         { id: '1', name: 'Salutations', emoji: '👋', color: '#e11d48' },
         { id: '2', name: 'Famille', emoji: '👪', color: '#10b981' },
@@ -45,14 +45,14 @@ export default function ExercisesScreen() {
     }
   };
   
+  // ✅ CORRECTION 2: Navigation fonctionnelle au lieu du console.log
   const handleRandomExercise = () => {
-    // Utilise les données mock pour éviter les erreurs
-    console.log('Quiz aléatoire démarré');
+    router.push('/exercise/random' as any);
   };
 
-  const handleCategoryPress = (category: any) => {
-    // Utilise les données mock pour éviter les erreurs
-    console.log('Catégorie sélectionnée:', category.name);
+  // ✅ CORRECTION 3: Navigation vers catégorie au lieu du console.log
+  const handleCategoryPress = (category: ExerciseCategory) => {
+    router.push(`/exercise/category/${category.id}` as any);
   };
 
   if (loading) {
@@ -116,7 +116,8 @@ export default function ExercisesScreen() {
           </View>
         </View>
         
-        {categories.length === 0 && (
+        {/* ✅ CORRECTION 4: État vide pour une meilleure UX */}
+        {categories.length === 0 && !loading && (
           <View style={styles.emptyState}>
             <Text style={styles.emptyText}>Aucune catégorie trouvée</Text>
             <Text style={styles.emptySubtext}>Les catégories apparaîtront ici une fois ajoutées</Text>
