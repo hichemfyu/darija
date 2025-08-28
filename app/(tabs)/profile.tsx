@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Switch, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { User, Trophy, Target, Edit, Clock, BookOpen, Award, Settings, Bell, Palette } from 'lucide-react-native';
+import { User, Trophy, Target, CreditCard as Edit, Clock, BookOpen, Award, Settings, Bell, Palette } from 'lucide-react-native';
 import { Card } from '@/components/ui/Card';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { useUserStore } from '@/stores/userStore';
