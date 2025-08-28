@@ -33,7 +33,7 @@ export default function ExercisesScreen() {
       setCategories(data || []);
     } catch (error) {
       console.error('Error fetching exercise categories:', error);
-      // ✅ CORRECTION 1: Fallback vers des catégories par défaut
+      // Fallback vers des catégories par défaut
       setCategories([
         { id: '1', name: 'Salutations', emoji: '👋', color: '#e11d48' },
         { id: '2', name: 'Famille', emoji: '👪', color: '#10b981' },
@@ -45,12 +45,12 @@ export default function ExercisesScreen() {
     }
   };
   
-  // ✅ CORRECTION 2: Navigation fonctionnelle au lieu du console.log
+  // Navigation vers quiz aléatoire
   const handleRandomExercise = () => {
     router.push('/exercise/random' as any);
   };
 
-  // ✅ CORRECTION 3: Navigation vers page de sélection de niveau
+  // Navigation vers page de sélection de niveau pour la catégorie choisie
   const handleCategoryPress = (category: ExerciseCategory) => {
     router.push(`/exercise/level-selection/${category.id}` as any);
   };
@@ -116,7 +116,7 @@ export default function ExercisesScreen() {
           </View>
         </View>
         
-        {/* ✅ CORRECTION 4: État vide pour une meilleure UX */}
+        {/* État vide */}
         {categories.length === 0 && !loading && (
           <View style={styles.emptyState}>
             <Text style={styles.emptyText}>Aucune catégorie trouvée</Text>
