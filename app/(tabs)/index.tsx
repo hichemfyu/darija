@@ -6,58 +6,16 @@ import { Target, BookOpen, Trophy, Play, ChevronDown } from 'lucide-react-native
 import { Card } from '@/components/ui/Card';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { useUserStore } from '@/stores/userStore';
-import { getResumeDestination } from '@/lib/resumeLogic';
-import { calcLevel, getXPForLevel, getProgressToNextLevel } from '@/lib/userLevel';
 
 const { height: screenHeight } = Dimensions.get('window');
-const AUTO_CONTINUE_ON_LAUNCH = true;
 
 export default function HomeScreen() {
   const router = useRouter();
   const scrollViewRef = React.useRef<ScrollView>(null);
-  const { profile, userStats, loadUserData } = useUserStore();
-  const [loading, setLoading] = React.useState(false);
+  const { profile } = useUserStore();
 
-  // Simuler un utilisateur pour les tests
-  const mockUserId = 'mock-user-id';
-
-  React.useEffect(() => {
-    loadUserData(mockUserId);
-    if (AUTO_CONTINUE_ON_LAUNCH) {
-      handleAutoResume();
-    }
-  }, []);
-
-  const handleAutoResume = async () => {
-    try {
-      setLoading(true);
-      const destination = await getResumeDestination(mockUserId);
-      if (destination) {
-        router.push(destination.route as any);
-      } else {
-        router.push('/exercises');
-      }
-    } catch (error) {
-      console.error('Error in auto resume:', error);
-      router.push('/exercises');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-const handleContinueLesson = async () => {
-  router.push('/lesson');
-};
-    try {
-      const destination = await getResumeDestination(mockUserId);
-      if (destination) {
-        router.push(destination.route as any);
-      } else {
-        router.push('/lesson');
-      }
-    } catch (error) {
-      router.push('/lesson');
-    }
+  const handleContinueLesson = () => {
+    router.push('/exercises');
   };
 
   const handleQuickExercise = () => {
@@ -71,12 +29,11 @@ const handleContinueLesson = async () => {
     });
   };
 
-  // Simple level calculation
-  const currentXP = userStats?.xp_total || profile.xp;
-  const currentLevel = userStats?.level || calcLevel(currentXP);
-  const xpForCurrentLevel = getXPForLevel(currentLevel);
-  const xpForNextLevel = getXPForLevel(currentLevel + 1);
-  const progressToNextLevel = getProgressToNextLevel(currentXP, currentLevel);
+  // Calcul simple du niveau
+  const currentLevel = Math.floor(profile.xp / 100) + 1;
+  const xpForCurrentLevel = (currentLevel - 1) * 100;
+  const xpForNextLevel = currentLevel * 100;
+  const progressToNextLevel = (profile.xp - xpForCurrentLevel) / (xpForNextLevel - xpForCurrentLevel);
 
   const challenges = [
     {
@@ -163,7 +120,7 @@ const handleContinueLesson = async () => {
             <View style={styles.levelHeader}>
               <View style={styles.levelInfo}>
                 <Text style={styles.levelTitle}>Niveau {currentLevel}</Text>
-                <Text style={styles.levelXP}>{currentXP} XP</Text>
+                <Text style={styles.levelXP}>{profile.xp} XP</Text>
               </View>
               <View style={styles.levelBadge}>
                 <Trophy size={16} color="#f59e0b" />
@@ -174,7 +131,7 @@ const handleContinueLesson = async () => {
               progressColor="#10b981" 
             />
             <Text style={styles.levelProgressText}>
-              {Math.max(0, xpForNextLevel - currentXP)} XP pour le niveau {currentLevel + 1}
+              {Math.max(0, xpForNextLevel - profile.xp)} XP pour le niveau {currentLevel + 1}
             </Text>
           </Card>
 
@@ -217,16 +174,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#0a0a0a',
-  },
-  loadingContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  loadingText: {
-    fontSize: 16,
-    fontFamily: 'Inter-Regular',
-    color: '#a1a1aa',
   },
   header: {
     padding: 32,

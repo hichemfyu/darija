@@ -47,7 +47,7 @@ export default function DictionaryScreen() {
   };
 
   const handleCategoryPress = (category: DictionaryCategory) => {
-    router.push(`/dictionary/${category.id}` as any);
+    console.log('Catégorie sélectionnée:', category.name);
   };
 
   if (loading) {

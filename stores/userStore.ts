@@ -1,9 +1,6 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserProfile, Achievement } from '@/data/mockData';
-import { supabase } from '@/lib/supabase';
-import { getUserStats, awardXP, UserStats } from '@/lib/userLevel';
-import { getUserSettings, updateUserSettings, UserSettings } from '@/lib/userSettings';
 
 interface UserState {
   profile: UserProfile;
@@ -11,8 +8,6 @@ interface UserState {
   favoriteWords: string[];
   completedLessons: string[];
   completedExercises: string[];
-  userStats: UserStats | null;
-  userSettings: UserSettings | null;
   
   // Actions
   addXP: (amount: number) => void;
@@ -20,8 +15,6 @@ interface UserState {
   completeExercise: (exerciseId: string, correct: boolean) => void;
   toggleFavoriteWord: (wordId: string) => void;
   updateStreak: () => void;
-  loadUserData: (userId: string) => Promise<void>;
-  updateSettings: (userId: string, settings: Partial<UserSettings>) => Promise<void>;
   loadData: () => Promise<void>;
   saveData: () => Promise<void>;
 }
@@ -67,10 +60,8 @@ export const useUserStore = create<UserState>((set, get) => ({
   favoriteWords: [],
   completedLessons: ['l1'],
   completedExercises: [],
-  userStats: null,
-  userSettings: null,
 
-  addXP: async (amount: number) => {
+  addXP: (amount: number) => {
     set((state) => {
       const newXP = state.profile.xp + amount;
       const newLevel = Math.floor(newXP / 100) + 1;
@@ -83,14 +74,6 @@ export const useUserStore = create<UserState>((set, get) => ({
         }
       };
     });
-    
-    // Synchroniser avec Supabase si possible
-    try {
-      const mockUserId = 'mock-user-id';
-      await awardXP(mockUserId, amount);
-    } catch (error) {
-      console.error('Error syncing XP to Supabase:', error);
-    }
     
     get().saveData();
   },
@@ -154,36 +137,6 @@ export const useUserStore = create<UserState>((set, get) => ({
     get().saveData();
   },
 
-  loadUserData: async (userId: string) => {
-    try {
-      const [stats, settings] = await Promise.all([
-        getUserStats(userId),
-        getUserSettings(userId)
-      ]);
-      
-      set((state) => ({
-        userStats: stats,
-        userSettings: settings,
-        profile: stats ? {
-          ...state.profile,
-          xp: stats.xp_total,
-          level: stats.level
-        } : state.profile
-      }));
-    } catch (error) {
-      console.error('Error loading user data:', error);
-    }
-  },
-
-  updateSettings: async (userId: string, settings: Partial<UserSettings>) => {
-    try {
-      const updatedSettings = await updateUserSettings(userId, settings);
-      set({ userSettings: updatedSettings });
-    } catch (error) {
-      console.error('Error updating settings:', error);
-    }
-  },
-
   loadData: async () => {
     try {
       const data = await AsyncStorage.getItem('userProfile');
@@ -204,9 +157,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         achievements: state.achievements,
         favoriteWords: state.favoriteWords,
         completedLessons: state.completedLessons,
-        completedExercises: state.completedExercises,
-        userStats: state.userStats,
-        userSettings: state.userSettings
+        completedExercises: state.completedExercises
       }));
     } catch (error) {
       console.error('Error saving user data:', error);

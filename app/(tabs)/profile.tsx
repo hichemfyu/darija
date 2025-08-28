@@ -1,55 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Switch, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { User, Trophy, Target, CreditCard as Edit, Clock, BookOpen, Award, Settings, Bell, Palette } from 'lucide-react-native';
+import { User, Trophy, Target, Edit, Clock, BookOpen, Award, Settings, Bell, Palette } from 'lucide-react-native';
 import { Card } from '@/components/ui/Card';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { useUserStore } from '@/stores/userStore';
 import { mockAchievements } from '@/data/mockData';
-import { calcLevel, getXPForLevel, getProgressToNextLevel } from '@/lib/userLevel';
-import { requestNotificationPermissions } from '@/lib/notifications';
-import { ThemePreference } from '@/lib/userSettings';
 
 export default function ProfileScreen() {
-  const { profile, achievements, userStats, userSettings, loadUserData, updateSettings } = useUserStore();
-  const [localSettings, setLocalSettings] = useState({
-    theme_preference: 'dark',
-    notifications_enabled: false,
-    push_token: null
-  });
-  
+  const { profile, achievements } = useUserStore();
   const [isEditingPseudo, setIsEditingPseudo] = useState(false);
   const [newPseudo, setNewPseudo] = useState(profile.pseudo);
-  const [loading, setLoading] = useState(false);
-
-  // Simuler un utilisateur pour les tests
-  const mockUserId = 'mock-user-id';
-
-  useEffect(() => {
-    loadUserData(mockUserId);
-    if (userSettings) {
-      setLocalSettings({
-        theme_preference: userSettings.theme_preference,
-        notifications_enabled: userSettings.notifications_enabled,
-        push_token: userSettings.push_token
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    if (userSettings) {
-      setLocalSettings({
-        theme_preference: userSettings.theme_preference,
-        notifications_enabled: userSettings.notifications_enabled,
-        push_token: userSettings.push_token
-      });
-    }
-  }, [userSettings]);
-
-  const saveSettings = async (newSettings: any) => {
-    setLocalSettings(newSettings);
-    await updateSettings(mockUserId, newSettings);
-  };
+  const [themePreference, setThemePreference] = useState('dark');
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
   const updatePseudo = (newPseudo: string) => {
     useUserStore.setState((state) => ({
@@ -60,47 +23,24 @@ export default function ProfileScreen() {
     }));
   };
 
-  const handleThemeChange = async (theme: ThemePreference) => {
-    const newSettings = { ...localSettings, theme_preference: theme };
-    await saveSettings(newSettings);
+  const handleThemeChange = (theme: string) => {
+    setThemePreference(theme);
     Alert.alert('Thème mis à jour', `Le thème ${theme === 'dark' ? 'sombre' : theme === 'light' ? 'clair' : 'système'} a été appliqué.`);
   };
 
-  const handleNotificationsToggle = async (enabled: boolean) => {
-    try {
-      setLoading(true);
-      let newSettings = { ...localSettings, notifications_enabled: enabled };
-      
-      if (enabled) {
-        const permissionResult = await requestNotificationPermissions();
-        if (permissionResult.granted) {
-          newSettings.push_token = permissionResult.token || null;
-        } else {
-          Alert.alert('Erreur', permissionResult.error || 'Permission refusée');
-          return;
-        }
-      } else {
-        newSettings.push_token = null;
-      }
-      
-      await saveSettings(newSettings);
-      Alert.alert(
-        'Notifications', 
-        enabled ? 'Notifications activées avec succès !' : 'Notifications désactivées.'
-      );
-    } catch (error) {
-      console.error('Error toggling notifications:', error);
-      Alert.alert('Erreur', 'Une erreur est survenue lors de la modification des notifications.');
-    } finally {
-      setLoading(false);
-    }
+  const handleNotificationsToggle = (enabled: boolean) => {
+    setNotificationsEnabled(enabled);
+    Alert.alert(
+      'Notifications', 
+      enabled ? 'Notifications activées avec succès !' : 'Notifications désactivées.'
+    );
   };
 
-  // Calcul du niveau avec données Supabase ou fallback
-  const currentXP = userStats?.xp_total || profile.xp;
-  const currentLevel = userStats?.level || calcLevel(currentXP);
-  const progressToNextLevel = getProgressToNextLevel(currentXP, currentLevel);
-  const xpForNextLevel = getXPForLevel(currentLevel + 1);
+  // Calcul simple du niveau
+  const currentLevel = Math.floor(profile.xp / 100) + 1;
+  const xpForCurrentLevel = (currentLevel - 1) * 100;
+  const xpForNextLevel = currentLevel * 100;
+  const progressToNextLevel = (profile.xp - xpForCurrentLevel) / (xpForNextLevel - xpForCurrentLevel);
   
   const studyHours = Math.floor(profile.studyTimeMinutes / 60);
   const studyMinutes = profile.studyTimeMinutes % 60;
@@ -145,9 +85,9 @@ export default function ProfileScreen() {
   ];
 
   const themeOptions = [
-    { key: 'dark' as const, title: 'Sombre', description: 'Thème sombre' },
-    { key: 'light' as const, title: 'Clair', description: 'Thème clair' },
-    { key: 'system' as const, title: 'Système', description: 'Suit l\'appareil' }
+    { key: 'dark', title: 'Sombre', description: 'Thème sombre' },
+    { key: 'light', title: 'Clair', description: 'Thème clair' },
+    { key: 'system', title: 'Système', description: 'Suit l\'appareil' }
   ];
 
   return (
@@ -189,11 +129,11 @@ export default function ProfileScreen() {
         <Card style={styles.progressCard}>
           <View style={styles.progressHeader}>
             <Text style={styles.progressTitle}>Progression vers le niveau {currentLevel + 1}</Text>
-            <Text style={styles.progressXP}>{currentXP} XP</Text>
+            <Text style={styles.progressXP}>{profile.xp} XP</Text>
           </View>
           <ProgressBar progress={Math.min(1, Math.max(0, progressToNextLevel))} />
           <Text style={styles.progressText}>
-            {Math.max(0, xpForNextLevel - currentXP)} XP restants
+            {Math.max(0, xpForNextLevel - profile.xp)} XP restants
           </Text>
         </Card>
 
@@ -232,12 +172,12 @@ export default function ProfileScreen() {
                   onPress={() => handleThemeChange(option.key)}
                   style={[
                     styles.themeOption,
-                    localSettings.theme_preference === option.key && styles.selectedThemeOption
+                    themePreference === option.key && styles.selectedThemeOption
                   ]}
                 >
                   <Text style={[
                     styles.themeOptionText,
-                    localSettings.theme_preference === option.key && styles.selectedThemeOptionText
+                    themePreference === option.key && styles.selectedThemeOptionText
                   ]}>
                     {option.title}
                   </Text>
@@ -259,11 +199,10 @@ export default function ProfileScreen() {
                 </Text>
               </View>
               <Switch
-                value={localSettings.notifications_enabled}
+                value={notificationsEnabled}
                 onValueChange={handleNotificationsToggle}
-                disabled={loading}
                 trackColor={{ false: '#3f3f46', true: '#10b98180' }}
-                thumbColor={localSettings.notifications_enabled ? '#10b981' : '#71717a'}
+                thumbColor={notificationsEnabled ? '#10b981' : '#71717a'}
               />
             </View>
           </Card>
