@@ -52,7 +52,7 @@ export default function ExercisesScreen() {
 
   // Navigation vers page de sélection de niveau pour la catégorie choisie
   const handleCategoryPress = (category: ExerciseCategory) => {
-    router.push(`/exercise/level-selection/${category.id}` as any);
+    router.push(`/exercise/${category.id}` as any);
   };
 
   if (loading) {
