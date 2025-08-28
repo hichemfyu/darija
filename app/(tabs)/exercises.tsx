@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Shuffle } from 'lucide-react-native';
+import { Play } from 'lucide-react-native';
 import { Card } from '@/components/ui/Card';
 import { supabase } from '@/lib/supabase';
 
@@ -32,38 +32,25 @@ export default function ExercisesScreen() {
       if (error) throw error;
       setCategories(data || []);
     } catch (error) {
-      console.error('Error fetching exercise categories:', error);
-      // Fallback vers des catégories par défaut
-      setCategories([
-        { id: '1', name: 'Salutations', emoji: '👋', color: '#e11d48' },
-        { id: '2', name: 'Famille', emoji: '👪', color: '#10b981' },
-        { id: '3', name: 'Nourriture', emoji: '🍽️', color: '#3b82f6' },
-        { id: '4', name: 'Nombres', emoji: '🔢', color: '#f59e0b' },
-      ]);
+      console.error('Error fetching categories:', error);
     } finally {
       setLoading(false);
     }
   };
-  
+
   const handleRandomExercise = () => {
-    // Utilise les données mock pour éviter les erreurs
-    console.log('Quiz aléatoire démarré');
+    router.push('/exercise/random' as any);
   };
 
-  const handleCategoryPress = (category: any) => {
-    // Utilise les données mock pour éviter les erreurs
-    console.log('Catégorie sélectionnée:', category.name);
+  const handleCategoryPress = (category: ExerciseCategory) => {
+    router.push(`/exercise/category/${category.id}` as any);
   };
 
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Exercices</Text>
-          <Text style={styles.subtitle}>Teste tes connaissances avec des QCM</Text>
-        </View>
         <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Chargement des catégories...</Text>
+          <Text style={styles.loadingText}>Chargement...</Text>
         </View>
       </SafeAreaView>
     );
@@ -77,16 +64,16 @@ export default function ExercisesScreen() {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        {/* Bouton Commencer catégorie aléatoire */}
-        <TouchableOpacity onPress={handleRandomExercise} activeOpacity={0.8} style={styles.randomButton}>
+        {/* Bouton Commencer */}
+        <TouchableOpacity onPress={handleRandomExercise} activeOpacity={0.8} style={styles.startButton}>
           <Card style={styles.startCard}>
             <View style={styles.startContent}>
               <View style={styles.startIconContainer}>
-                <Shuffle size={32} color="#ffffff" />
+                <Play size={32} color="#ffffff" />
               </View>
               <View style={styles.startTextContainer}>
-                <Text style={styles.startTitle}>Commencer catégorie aléatoire</Text>
-                <Text style={styles.startSubtitle}>Quiz de 10 questions maximum</Text>
+                <Text style={styles.startTitle}>Commencer</Text>
+                <Text style={styles.startSubtitle}>catégories aléatoires</Text>
               </View>
             </View>
           </Card>
@@ -115,13 +102,6 @@ export default function ExercisesScreen() {
             ))}
           </View>
         </View>
-        
-        {categories.length === 0 && (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>Aucune catégorie trouvée</Text>
-            <Text style={styles.emptySubtext}>Les catégories apparaîtront ici une fois ajoutées</Text>
-          </View>
-        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -152,7 +132,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingBottom: 24,
   },
-  randomButton: {
+  startButton: {
     marginBottom: 32,
   },
   startCard: {
@@ -178,7 +158,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   startTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontFamily: 'Inter-Bold',
     fontWeight: '700',
     color: '#ffffff',
@@ -239,28 +219,10 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 60,
   },
   loadingText: {
     fontSize: 16,
     fontFamily: 'Inter-Regular',
     color: '#a1a1aa',
-  },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 60,
-  },
-  emptyText: {
-    fontSize: 18,
-    fontFamily: 'Inter-SemiBold',
-    fontWeight: '600',
-    color: '#ffffff',
-  },
-  emptySubtext: {
-    fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: '#a1a1aa',
-    marginTop: 4,
-    textAlign: 'center',
   },
 });
