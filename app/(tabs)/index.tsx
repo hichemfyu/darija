@@ -15,11 +15,11 @@ export default function HomeScreen() {
   const { profile } = useUserStore();
 
   const handleContinueLesson = () => {
-    router.push('/exercises');
+    router.push('/lessons'); // ✅ CORRIGÉ : maintenant ça va vers les leçons
   };
 
   const handleQuickExercise = () => {
-    router.push('/exercises');
+    router.push('/exercises'); // ✅ Correct : exercice rapide va vers exercices
   };
 
   const scrollToProgression = () => {
