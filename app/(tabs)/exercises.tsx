@@ -50,9 +50,9 @@ export default function ExercisesScreen() {
     router.push('/exercise/random' as any);
   };
 
-  // ✅ CORRECTION 3: Navigation vers catégorie au lieu du console.log
+  // ✅ CORRECTION 3: Navigation vers page de sélection de niveau
   const handleCategoryPress = (category: ExerciseCategory) => {
-    router.push(`/exercise/category/${category.id}` as any);
+    router.push(`/exercise/level-selection/${category.id}` as any);
   };
 
   if (loading) {
