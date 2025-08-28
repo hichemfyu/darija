@@ -45,7 +45,9 @@ export default function HomeScreen() {
     }
   };
 
-  const handleContinueLesson = async () => {
+const handleContinueLesson = async () => {
+  router.push('/lesson');
+};
     try {
       const destination = await getResumeDestination(mockUserId);
       if (destination) {
